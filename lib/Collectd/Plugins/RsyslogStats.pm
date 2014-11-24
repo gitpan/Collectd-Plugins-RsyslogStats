@@ -7,7 +7,7 @@ use Collectd qw( :all );
 use File::ReadBackwards;
 
 # ABSTRACT: collectd plugin for reading queue metrics from rsyslog/imstats logfile
-our $VERSION = '1.000'; # VERSION
+our $VERSION = '1.001'; # VERSION
 
 
 my $types = {
@@ -51,14 +51,12 @@ sub read_stats_from_log {
 	while ( my $line = $file->readline ) {
 		chomp($line);
 		if( $count >= $max_lines ) {
-			die("aborting search after $max_lines lines...\n");
 			return;
 		}
 		$count++;
 
 		my ($timestamp_str) = $line =~ s/^\S+\s+(\S+\s+\d+\s+\d+:\d+:\d+\s+\d+): //;
 		if( ! defined $timestamp_str ) {
-			die("could not parse timestamp on line $count...\n");
 			next;
 		}
 		if( $line !~ s/^(main Q|action \d+ queue[^:]*): // ) {
@@ -69,7 +67,7 @@ sub read_stats_from_log {
 		if( defined $stats->{$queue} ) {
 			last;
 		}
-		$stats->{$queue} = { map { my $v = $_ ; $v =~ s/[\s\.]+/_/g ; return $v } split(/[ =]/, $line) };
+		$stats->{$queue} = { map { my $v = $_ ; $v =~ s/[\s\.]+/_/g ; $v } split(/[ =]/, $line) };
 	}
 	return( $stats );
 }
@@ -114,7 +112,7 @@ Collectd::Plugins::RsyslogStats - collectd plugin for reading queue metrics from
 
 =head1 VERSION
 
-version 1.000
+version 1.001
 
 =head1 SYNOPSIS
 
